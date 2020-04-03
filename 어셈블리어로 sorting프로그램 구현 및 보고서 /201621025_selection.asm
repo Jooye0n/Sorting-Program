@@ -1,0 +1,282 @@
+.-----------------------MAKE ARR------------------
+	LDA	ZEROIDX
+	STA	INDEX
+GETARR	LDX	INDEX
+	LDA	ZEROIDX
+	RD	STDIN
+	COMP	SPACE
+	JEQ	CURSPC
+	COMP	EOFE
+	JEQ	CUREOF. IF E
+	J	CURNUM
+	
+CURSPC	LDA     INDEX
+        ADD     THREE
+	COMP	C22
+	JGT	ERROR
+        STA     INDEX
+	LDA	SIZE
+	ADD	ONE
+	STA	SIZE
+	J	GETARR
+
+CURNUM	SUB	ZERO
+	STA	TEMP
+	LDA	ARR,X
+	MUL	TEN
+	ADD	TEMP
+	STA	ARR,X
+	COMP	C99999
+	JGT	ERROR
+	J	GETARR
+
+CUREOF	RD	STDIN	;O
+	COMP	EOFO
+	JLT	ERROR
+	JGT	ERROR
+	RD	STDIN	;F
+	JLT	ERROR
+	JGT	ERROR
+
+	LDA	INDEX
+	LDX	ZEROIDX
+	COMP	THREE
+	JEQ	END	.한개일 경우
+
+.---------------SORTING-------------------------
+	
+FORIS   LDX     IDXI    ;X=I
+        LDA     ZEROIDX ;A=0
+        STA     TEMP    ;TEMP=A=0
+        LDA     ARR,X   ;A=ARR[I]
+        STA     TEMP    ;TEMP=A=ARR[I]
+	LDA     ZEROIDX 
+        STX     IDXJ    ;J=I
+FORJS	LDX	IDXJ
+	LDA	ARR,X
+	COMP	TEMP
+	JEQ	JMPIF
+	JLT	JMPIF
+	J	FORJM
+FORJM	LDA	IDXJ
+	ADD	THREE
+	STA	IDXJ
+	COMP	INDEX
+	JLT	FORJS
+	J	IFMIN
+        
+JMPIF   LDA     ARR,X   ;X는 j
+	STA	TEMP
+	LDA	ZEROIDX
+	LDA	IDXJ
+	STA	MINI
+	J	FORJM
+	
+FORIM	LDA	IDXI
+	ADD	THREE
+	STA	IDXI
+	COMP	INDEX
+	JLT	FORIS
+	J	FIN
+
+IFMIN	LDA	MINI
+	COMP	IDXI
+	JEQ	FORIM	
+	JLT	FORIM	
+	LDA	MINI
+	STA	IDXK
+FORKS	LDA	ZEROIDX
+	LDA	IDXK
+	SUB	THREE
+	STA	IDXK1
+	LDX	IDXK1
+	LDA	ARR,X
+	LDX	IDXK
+	STA	ARR,X
+
+	LDA	ZEROIDX
+	LDA	IDXK
+	SUB	THREE
+	STA	IDXK
+	COMP	IDXI
+	JGT	FORKS
+	
+	.ARR[I] = TEMP
+	LDA	ZEROIDX
+	LDA	TEMP
+	LDX	IDXI
+	STA	ARR,X
+	J	PRINT	
+	
+	
+	
+	
+.---------------PRINT-----------------------------
+
+PRINT	LDX	ZEROIDX	.ONE ARR
+	LDX	IDXP	
+	LDA	ZEROIDX
+	STA	OPTION
+	STA	ORIGIN
+	LDA	ARR,X
+
+	COMP	C9999	.10000< 5
+	JGT	J10000	
+	COMP	C999	.1000< 4
+	JGT	J1000
+	COMP	C99	.100< 3
+	JGT	J100
+	COMP	C9	.10< 2
+	JGT	J10
+	
+J1	ADD     ZERO
+        WD      STDOUT
+
+	LDA	SPACE
+	WD	STDOUT
+
+	LDA	IDXP
+	ADD	THREE
+	STA	IDXP
+	COMP	INDEX
+	JLT	PRINT
+	LDA	ZEROIDX
+	STA	IDXP
+	LDA	ENTER
+	WD	STDOUT
+	
+	LDA	CHK
+	COMP	ZEROIDX
+	JGT	STOP	
+	LDA	CNT
+	ADD	THREE
+	STA	CNT		
+	J	FORIM	.BREAK!!!!!!!!!!!!!!!!!!!!!!!
+
+J10000	STA	ORIGIN	
+	DIV	C10000
+	ADD	ZERO
+	WD	STDOUT
+	SUB	ZERO
+	MUL	C10000
+	STA	OPTION
+	LDA	ORIGIN
+	SUB	OPTION
+	J	J1000
+	
+J1000	STA     ORIGIN
+        DIV     C1000
+        ADD     ZERO
+        WD      STDOUT
+        SUB     ZERO
+        MUL     C1000
+        STA     OPTION
+        LDA     ORIGIN
+        SUB     OPTION
+        J       J100
+
+J100	STA     ORIGIN
+        DIV     C100
+        ADD     ZERO
+        WD      STDOUT
+        SUB     ZERO
+        MUL     C100
+        STA     OPTION
+        LDA     ORIGIN
+        SUB     OPTION
+        J       J10
+
+J10	STA     ORIGIN
+        DIV     C10
+        ADD     ZERO
+        WD      STDOUT
+        SUB     ZERO
+        MUL     C10
+        STA     OPTION
+        LDA     ORIGIN
+        SUB     OPTION
+        J       J1
+
+END     LDA     ARR,X
+       	J 	PRINT
+
+.-----------------------ERROR---------------------------
+
+ERROR   LDA     CHARE
+        WD      STDOUT
+        LDA     CHARN
+        WD      STDOUT
+        LDA     CHART
+        WD      STDOUT
+        LDA     CHARE
+        WD      STDOUT
+        LDA     CHARR
+        WD      STDOUT
+        LDA     SPACE
+        WD      STDOUT
+        LDA     CHARE
+        WD      STDOUT
+        LDA     CHARR
+        WD      STDOUT
+        WD      STDOUT
+        LDA     CHARO
+        WD      STDOUT
+        LDA     CHARR
+        WD      STDOUT
+        J       STOP
+
+
+FIN	LDA	CHK
+	ADD	THREE
+	STA	CHK
+	LDA	CNT
+	COMP	ZEROIDX
+	JEQ	PRINT	
+	J	STOP
+STOP	J	STOP
+				
+.-----------------------DERECTIVE---------------------
+
+STDIN   BYTE    0
+STDOUT  BYTE    1
+INDEX   RESW    1
+IDXI	RESW	1
+IDXJ	RESW	1
+IDXK	RESW	1
+IDXK1	RESW	1
+IDXP	RESW	1
+MIN	RESW	1
+MINI	RESW	1
+CHK	RESW	1
+CNT	RESW	1
+ARR	RESW    8
+TEMP	RESW	1
+ORIGIN	RESW	1
+OPTION	RESW	1
+SIZE	RESW	1
+SPACE   WORD    0x20
+ZERO    WORD    0x30
+EOFE	WORD	0x45
+EOFO	WORD	0x4F
+EOFF	WORD	0x46
+ENTER	WORD	10
+ZEROIDX	WORD	0
+ONE	WORD	1
+THREE   WORD    3
+TEN	WORD	10
+C22	WORD	25
+C10000	WORD	10000
+C1000	WORD	1000
+C100	WORD	100
+C10	WORD	10
+C9999	WORD	9999
+C999	WORD	999
+C99	WORD	99
+C9	WORD	9
+C99999	WORD	99999
+CHARE	WORD	0x65
+CHARR	WORD	0x72
+CHARO	WORD	0x6F
+CHART   WORD    0x74
+CHARN   WORD    0x6E
+
